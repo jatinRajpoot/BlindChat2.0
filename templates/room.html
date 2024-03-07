@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='chat-bubbles.png')}}">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <link rel="stylesheet" href="{{url_for('static', filename='css/roomstyle.css')}}" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+
+  <div class="menu">
+    <div class="back"><i class="fa fa-chevron-left"></i> <img
+        src="https://cdn.pixabay.com/photo/2016/11/14/17/39/group-1824145_1280.png"
+        draggable="false" /></div>
+    <div class="name">{{code}}</div>
+    <!-- <div class="last">18:09</div> -->
+  </div>
+  <ol class="chat messages" id="messages">
+
+
+
+  </ol>
+
+  <div class="inputs ">
+    <input type="text"  class="textarea"  rows="3" placeholder="Message" name="message" id="message" />
+
+
+    <script type="text/javascript">
+      let socketio = io();
+
+      const messages = document.getElementById("messages");
+
+      const createMessage = (name, msg) => {
+  let date = new Date();
+  let hour = date.getHours();
+  let minutes = date.getMinutes();
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+  hour = hour < 10 ? '0' + hour : hour;
+  const amPm = hour >= 12 ? 'PM' : 'AM';
+  let t = hour + ":" + minutes + " " + amPm;
+  
+  const content = `
+    <li class="other"> 
+      <div class="msg">
+        <p><strong>${name}</strong></p>
+        <p>${msg}</p>
+        <time>${t}</time>
+      </div>
+    </li>
+  `;
+
+  messages.insertAdjacentHTML('beforeend', content);
+  // Ensure the scroll happens after the DOM has been updated
+  setTimeout(() => {
+    messages.scrollTop = messages.scrollHeight;
+  }, 0);
+};
+
+
+      socketio.on("message", (data) => {
+        createMessage(data.name, data.message);
+      });
+
+      const sendMessage = () => {
+        const message = document.getElementById("message");
+        if (message.value == "") return;
+        socketio.emit("message", { data: message.value });
+        message.value = "";
+      };
+    </script>
+    {% for msg in messages %}
+    <script type="text/javascript">
+      createMessage("{{msg.name}}", "{{msg.message}}");
+    </script>
+    {% endfor %}
+    <script type="text/javascript">
+      // Existing socketio, createMessage, and sendMessage definitions
+    
+      const messageInput = document.getElementById("message");
+    
+      // Listen for key down events on the message input field
+      messageInput.addEventListener('keydown', function(event) {
+        // Check if the Enter key was pressed without the Shift key
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault(); // Prevent the default action to avoid line breaks in input or submitting the form
+          sendMessage();
+        }
+      });
+    
+      // Existing code for sendMessage and createMessage functions
+    </script>
+    
+  </div>
+</body>
+
+</html>
+
+
+
